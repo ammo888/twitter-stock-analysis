@@ -1,14 +1,12 @@
-import sys
-import questionary as q
-import pandas as pd
-import pandas_market_calendars as mcal
 import numpy as np
+import pandas as pd
 from datetime import datetime
 import hvplot as hv
 import spacy
 import asent
 from dframcy import dframcy
 from spacytextblob.spacytextblob import SpacyTextBlob
+
 
 def get_tweet_sentiment(twitter_user):
     print("Gathering Senitment from your selection...")
