@@ -10,11 +10,11 @@ import asent
 from dframcy import dframcy
 from spacytextblob.spacytextblob import SpacyTextBlob
 
-def get_tweet_sentiment(username):
+def get_tweet_sentiment(twitter_user):
     print("Gathering Senitment from your selection...")
 
     try:
-        f = open(f"{username}.csv")
+        f = open(f"{twitter_user}.csv")
         f.close()
  
     except FileNotFoundError:
