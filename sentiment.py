@@ -20,7 +20,7 @@ def get_tweet_sentiment(twitter_user):
     except FileNotFoundError:
         print("File not found. FileNotFoundError occured.")
     
-    tweet_df = pd.read_csv(f"{username}.csv", index_col="date", infer_datetime_format=True, parse_dates=True)
+    tweet_df = pd.read_csv(f"{twitter_user}.csv", index_col="date", infer_datetime_format=True, parse_dates=True)
     tweet_df.dropna(inplace=True)
 
 # Adding spacy model and the sentencizer and asent pipelines
@@ -43,7 +43,7 @@ def get_tweet_sentiment(twitter_user):
 
     tweet_df['weighted_sentiment'] = (tweet_df["followers"])*(tweet_df["average_sentiment"]).sum()/tweet_df["followers"].sum()
 
-    output_file = df.to_csv(f'{username}_sentiment.csv', index = True)
+    output_file = tweet_df.to_csv(f'{twitter_user}_sentiment.csv', index = True)
     print('\nCSV String:\n', output_file)
    
     return tweet_df
