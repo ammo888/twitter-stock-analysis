@@ -74,5 +74,7 @@ def get_tweet_sentiment():
 
     tweet_df['weighted_sentiment'] = (tweet_df["followers"])*(tweet_df["average_sentiment"]).sum()/tweet_df["followers"].sum()
 
-
-    
+    output_file = df.to_csv('GfG.csv', index = True)
+    print('\nCSV String:\n', output_file)
+   
+    return tweet_df
