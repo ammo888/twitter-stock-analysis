@@ -47,34 +47,3 @@ def user_input():
 if __name__ == '__main__':
     twitter_user, stock_ticker, analysis_date = user_input()
     print(f"Analyzing twitter sentiment of @{twitter_user} against stock price of ^{stock_ticker} on {analysis_date}...")
-
-def get_tweet_sentiment():
-    print(".....")
-
-    tweet_df = pd.read_csv("../Files/demo_tweets.csv", index_col="date", infer_datetime_format=True, parse_dates=True)
-    tweet_df.dropna(inplace=True)
-
-# Adding spacy model and the sentencizer and asent pipeline
-
-    nlp = spacy.blank('en')
-    nlp.add_pipe('sentencizer')
-    nlp.add_pipe('asent_en_v1')
-
-    tweet_df["Sentiment_asent"] = tweet_df["tweet"].apply(lambda tweet: nlp(tweet)._.polarity.compound)
-
-    nlp2 = spacy.load('en_core_web_sm')
-    nlp2.add_pipe('spacytextblob')
-    nlp2
-
-    tweet_df['Sentiment_textblob'] = tweet_df['tweet'].apply(lambda tweet: nlp2(tweet)._.blob.polarity)
-    
-    tweet_df['average_sentiment'] = tweet_df[["Sentiment_asent", "Sentiment_textblob"]].mean(axis=1)
-
-# weighted score = followers * sentiment score + followers * sentiment score / total number of followers
-
-    tweet_df['weighted_sentiment'] = (tweet_df["followers"])*(tweet_df["average_sentiment"]).sum()/tweet_df["followers"].sum()
-
-    output_file = df.to_csv('GfG.csv', index = True)
-    print('\nCSV String:\n', output_file)
-   
-    return tweet_df
