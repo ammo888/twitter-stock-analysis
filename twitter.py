@@ -67,7 +67,7 @@ def mentions(user_id, start_date, end_date, num_tweets=5, num_pages=1):
     return df
 
 
-def get_tweets(twitter_handle, analysis_date, num_tweets=50, num_pages=16, append=True):
+def get_tweets(twitter_handle, analysis_date, num_tweets=100, num_pages=8, append=True):
     print(f"Fetching tweets for @{twitter_handle} for {analysis_date} with {num_pages} pages with up to {num_tweets} tweets per page")
 
     tweets_file_csv = f"@{twitter_handle}-{analysis_date}.csv"
@@ -94,4 +94,4 @@ def get_tweets(twitter_handle, analysis_date, num_tweets=50, num_pages=16, appen
     twitter_df.to_csv(tweets_file_csv, index=False)
 
 if __name__ == "__main__":
-    get_tweets("elonmusk", "2022-10-05", num_tweets=50, num_pages=16, append=True)
+    get_tweets("elonmusk", "2022-10-05")

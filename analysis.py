@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import hvplot.pandas
+import holoviews as hv
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
@@ -41,12 +42,15 @@ def perform_analysis(twitter_handle, stock_ticker, analysis_date, dummy_sentimen
     aggregated_sentiment_df['final_sentiment'] = aggregated_sentiment_df['weighted_sentiment']['sum'] / aggregated_sentiment_df['followers']['sum']
     aggregated_sentiment_df['final_count'] = aggregated_sentiment_df['weighted_sentiment']['count']
 
-    stock_plot = stock_df.Change.hvplot.line()
-    sentiment_plot = aggregated_sentiment_df.final_sentiment.hvplot.line()
+    stock_plot = stock_df.Close.hvplot.line(title=f"^{stock_ticker} on {analysis_date}")
+    stock_change_plot = stock_df.Change.hvplot.line(title=f"^{stock_ticker} % change on {analysis_date}")
+    sentiment_plot = aggregated_sentiment_df.final_sentiment.hvplot.line(title=f"Aggregated sentiment for @{twitter_handle}")
 
     stock_plot_png = f"@{twitter_handle}-^{stock_ticker}-{analysis_date}.html"
 
-    hvplot.save(stock_plot + sentiment_plot, stock_plot_png)
+    plot = hv.Layout(stock_plot + stock_change_plot + sentiment_plot).cols(1)
+
+    hvplot.save(plot, stock_plot_png)
 
 if __name__ == "__main__":
     perform_analysis("elonmusk", "TSLA", "2022-10-05")
