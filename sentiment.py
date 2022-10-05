@@ -45,7 +45,7 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
     # tweet_weighted_sentiment = followers * average_sentiment
 
     tweet_df['weighted_sentiment'] = tweet_df["average_sentiment"] * tweet_df["followers"]
-    tweet_df.to_csv(sentiment_file_csv, index = True)
+    tweet_df.to_csv(sentiment_file_csv, index=False)
 
 if __name__ == '__main__':
-    get_tweet_sentiment("elonmusk", "2022-09-27", custom_tweets_file="Files/elonmusk.csv")
+    get_tweet_sentiment("elonmusk", "2022-10-05")
