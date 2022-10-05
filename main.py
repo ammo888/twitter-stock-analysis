@@ -3,6 +3,8 @@ import questionary as q
 import pandas as pd
 import pandas_market_calendars as mcal
 
+from twitter import *
+from stock import *
 from sentiment import *
 from analysis import *
 
@@ -34,13 +36,13 @@ def user_input():
     print("Welcome to the twitter sentiment vs. stock price analysis tool!")
 
     # Get twitter handle of interest
-    twitter_user = q.text("Please enter the twitter user handle of interest:").ask()
+    twitter_handle = q.text("Please enter the twitter user handle of interest:").ask()
     # Get stock ticker of interest
     stock_ticker = q.text("Please enter the stock ticker of interest:").ask()
     stock_ticker = stock_ticker.upper()
 
     # Confirm user input
-    confirmation = q.confirm(f"Do you want to proceed analysis for twitter user @{twitter_user} and stock ticker ^{stock_ticker}?").ask()
+    confirmation = q.confirm(f"Do you want to proceed analysis for twitter user @{twitter_handle} and stock ticker ^{stock_ticker}?").ask()
 
     if not confirmation:
         print("Ok! Exiting script...")
@@ -49,17 +51,30 @@ def user_input():
     # Get analysis date
     analysis_date = get_analysis_date()
 
-    return twitter_user, stock_ticker, analysis_date
+    return twitter_handle, stock_ticker, analysis_date
+
+'''
+Get tweet and stock data
+'''
+def get_data(twitter_handle, stock_ticker, analysis_date):
+    print(f"Fetching data for @{twitter_handle} and ^{stock_ticker} for {analysis_date}")
+
+    # Get tweets
+    get_tweets(twitter_handle, analysis_date)
+
+    # Get stock data
+    get_stock_data(stock_ticker, analysis_date)
 
 
 if __name__ == '__main__':
-    twitter_user, stock_ticker, analysis_date = user_input()
-    print(f"Analyzing twitter sentiment of @{twitter_user} against stock price of ^{stock_ticker} on {analysis_date}...")
+    twitter_handle, stock_ticker, analysis_date = user_input()
+    print(f"Analyzing twitter sentiment of @{twitter_handle} against stock price of ^{stock_ticker} on {analysis_date}...")
 
     # Collect data and process
+    get_data(twitter_handle, stock_ticker, analysis_date)
 
     # Perform sentiment analysis
-    get_tweet_sentiment(twitter_user, analysis_date)
+    get_tweet_sentiment(twitter_handle, analysis_date)
 
     # Perform correlation analysis
-    perform_analysis(twitter_user, stock_ticker, analysis_date)
+    perform_analysis(twitter_handle, stock_ticker, analysis_date)
