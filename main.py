@@ -3,6 +3,9 @@ import questionary as q
 import pandas as pd
 import pandas_market_calendars as mcal
 
+from sentiment import *
+from analysis import *
+
 '''
 Retrieve user input for date of analysis
 '''
@@ -52,3 +55,11 @@ def user_input():
 if __name__ == '__main__':
     twitter_user, stock_ticker, analysis_date = user_input()
     print(f"Analyzing twitter sentiment of @{twitter_user} against stock price of ^{stock_ticker} on {analysis_date}...")
+
+    # Collect data and process
+
+    # Perform sentiment analysis
+    get_tweet_sentiment(twitter_user, analysis_date)
+
+    # Perform correlation analysis
+    perform_analysis(twitter_user, stock_ticker, analysis_date)
