@@ -7,7 +7,7 @@ from pathlib import Path
 from spacytextblob.spacytextblob import SpacyTextBlob
 
 
-def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
+def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None, use_large_model=True):
     print("Gathering sentiment from your selection...")
 
     tweets_file_csv = f"@{twitter_user}-{analysis_date}.csv" if custom_tweets_file is None else custom_tweets_file
@@ -29,8 +29,9 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
     tweet_df.dropna(inplace=True)
 
     # Adding spacy model and the sentencizer and asent pipelines
+    spacy_model = 'en_core_web_lg' if use_large_model else 'en_core_web_sm'
 
-    nlp = spacy.load('en_core_web_lg')
+    nlp = spacy.load(spacy_model)
     nlp.add_pipe('sentencizer')
     nlp.add_pipe('asent_en_v1')
     nlp.add_pipe('spacytextblob')
