@@ -7,7 +7,7 @@ from pathlib import Path
 from spacytextblob.spacytextblob import SpacyTextBlob
 
 
-def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
+def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None, use_large_model=True):
     print("Gathering sentiment from your selection...")
 
     tweets_file_csv = f"@{twitter_user}-{analysis_date}.csv" if custom_tweets_file is None else custom_tweets_file
@@ -29,15 +29,16 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
     tweet_df.dropna(inplace=True)
 
     # Adding spacy model and the sentencizer and asent pipelines
+    spacy_model = 'en_core_web_lg' if use_large_model else 'en_core_web_sm'
 
-    nlp = spacy.load('en_core_web_lg')
+    nlp = spacy.load(spacy_model)
     nlp.add_pipe('sentencizer')
     nlp.add_pipe('asent_en_v1')
     nlp.add_pipe('spacytextblob')
 
-    tweet_sentiments = tweet_df["text"].apply(lambda tweet: nlp(tweet))
-    tweet_df["sentiment_asent"] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.polarity.compound)
-    tweet_df['sentiment_textblob'] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.blob.polarity)
+    tweet_sentiments = list(nlp.pipe(tweet_df.text))
+    tweet_df["sentiment_asent"] = [tweet_nlp._.polarity.compound for tweet_nlp in tweet_sentiments]
+    tweet_df['sentiment_textblob'] = [tweet_nlp._.blob.polarity for tweet_nlp in tweet_sentiments]
     tweet_df['average_sentiment'] = tweet_df[["sentiment_asent", "sentiment_textblob"]].mean(axis=1)
 
     # tweet_weighted_sentiment = followers * average_sentiment

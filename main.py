@@ -42,7 +42,7 @@ def user_input():
     stock_ticker = stock_ticker.upper()
 
     # Confirm user input
-    confirmation = q.confirm(f"Do you want to proceed analysis for twitter user @{twitter_handle} and stock ticker ^{stock_ticker}?").ask()
+    confirmation = q.confirm(f"Do you want to proceed analysis for twitter user @{twitter_handle} and stock ticker ^{stock_ticker}?", auto_enter=False).ask()
 
     if not confirmation:
         print("Ok! Exiting script...")
@@ -51,7 +51,10 @@ def user_input():
     # Get analysis date
     analysis_date = get_analysis_date()
 
-    return twitter_handle, stock_ticker, analysis_date
+    # Confirm whether to use en_core_web_lg or en_core_web_sm
+    use_large_model = q.confirm(f"Do you want to use a larger SpaCy model (slower) for sentiment analysis?", auto_enter=False).ask()
+
+    return twitter_handle, stock_ticker, analysis_date, use_large_model
 
 '''
 Get tweet and stock data
@@ -67,14 +70,14 @@ def get_data(twitter_handle, stock_ticker, analysis_date):
 
 
 if __name__ == '__main__':
-    twitter_handle, stock_ticker, analysis_date = user_input()
+    twitter_handle, stock_ticker, analysis_date, use_large_model = user_input()
     print(f"Analyzing twitter sentiment of @{twitter_handle} against stock price of ^{stock_ticker} on {analysis_date}...")
 
     # Collect data and process
     get_data(twitter_handle, stock_ticker, analysis_date)
 
     # Perform sentiment analysis
-    get_tweet_sentiment(twitter_handle, analysis_date)
+    get_tweet_sentiment(twitter_handle, analysis_date, use_large_model=use_large_model)
 
     # Perform correlation analysis
     perform_analysis(twitter_handle, stock_ticker, analysis_date)
