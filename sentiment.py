@@ -36,9 +36,9 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None, us
     nlp.add_pipe('asent_en_v1')
     nlp.add_pipe('spacytextblob')
 
-    tweet_sentiments = tweet_df["text"].apply(lambda tweet: nlp(tweet))
-    tweet_df["sentiment_asent"] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.polarity.compound)
-    tweet_df['sentiment_textblob'] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.blob.polarity)
+    tweet_sentiments = list(nlp.pipe(tweet_df.text))
+    tweet_df["sentiment_asent"] = [tweet_nlp._.polarity.compound for tweet_nlp in tweet_sentiments]
+    tweet_df['sentiment_textblob'] = [tweet_nlp._.blob.polarity for tweet_nlp in tweet_sentiments]
     tweet_df['average_sentiment'] = tweet_df[["sentiment_asent", "sentiment_textblob"]].mean(axis=1)
 
     # tweet_weighted_sentiment = followers * average_sentiment
