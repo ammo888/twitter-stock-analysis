@@ -4,7 +4,7 @@ import hvplot.pandas
 import holoviews as hv
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
-from scipy.signal import correlate
+from scipy.signal import correlate, correlation_lags
 import matplotlib.pyplot as plt
 
 
@@ -50,10 +50,19 @@ def perform_analysis(twitter_handle, stock_ticker, analysis_date, dummy_sentimen
     tweet_count_plot = aggregated_sentiment_df.final_count.hvplot.line(title=f"Tweet counts for @{twitter_handle} on {analysis_date}")
 
     signal_corr = correlate(stock_df.Change, aggregated_sentiment_df.final_sentiment, method='direct')
-    correlation_plot = pd.DataFrame(signal_corr).hvplot.line(title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
-    correlation_smooth_plot = pd.DataFrame(signal_corr).rolling(10).mean().hvplot.line(title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
+    lags = correlation_lags(len(stock_df.Change), len(aggregated_sentiment_df.final_sentiment))
 
-    plot = hv.Layout(stock_plot + stock_change_plot + sentiment_plot + tweet_count_plot + (correlation_plot * correlation_smooth_plot)).cols(1)
+    corr_df = pd.DataFrame({'lag': lags, 'correlation': signal_corr})
+
+    correlation_plot = corr_df.hvplot.line(x='lag', y='correlation', title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
+    correlation_smooth_plot = corr_df.rolling(10).mean().hvplot.line(x='lag', y='correlation', title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
+
+    abs_corr_df = corr_df.copy()
+    abs_corr_df.correlation = abs_corr_df.correlation.abs()
+    abs_correlation_plot = abs_corr_df.hvplot.line(x='lag', y='correlation', title=f"Sliding absolute correlation between @{twitter_handle} and ^{stock_ticker}")
+    abs_correlation_smooth_plot = abs_corr_df.rolling(10).mean().hvplot.line(x='lag', y='correlation', title=f"Sliding absolute correlation between @{twitter_handle} and ^{stock_ticker}")
+
+    plot = hv.Layout(stock_plot + stock_change_plot + sentiment_plot + tweet_count_plot + (correlation_plot * correlation_smooth_plot) + (abs_correlation_plot * abs_correlation_smooth_plot)).cols(1)
 
     stock_plot_png = f"@{twitter_handle}-^{stock_ticker}-{analysis_date}.html"
     hvplot.save(plot, stock_plot_png)
