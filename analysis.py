@@ -4,6 +4,7 @@ import hvplot.pandas
 import holoviews as hv
 from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
+from scipy.signal import correlate
 import matplotlib.pyplot as plt
 
 
@@ -37,20 +38,26 @@ def perform_analysis(twitter_handle, stock_ticker, analysis_date, dummy_sentimen
     else:
         sentiment_df = pd.read_csv(sentiment_csv, parse_dates=True, infer_datetime_format=True)
 
-    sentiment_df['timestamp'] = pd.to_datetime(sentiment_df['timestamp']).dt.round('5min')
-    aggregated_sentiment_df = sentiment_df[['timestamp', 'weighted_sentiment', 'followers']].groupby('timestamp').agg(['sum', 'count'])
+    sentiment_df['timestamp'] = pd.to_datetime(sentiment_df['timestamp']).dt.tz_convert('US/Eastern').round('5min')
+    aggregated_sentiment_df = sentiment_df[['timestamp', 'sentiment_asent', 'sentiment_textblob', 'weighted_sentiment', 'followers']].groupby('timestamp').agg(['sum', 'count'])
+
     aggregated_sentiment_df['final_sentiment'] = aggregated_sentiment_df['weighted_sentiment']['sum'] / aggregated_sentiment_df['followers']['sum']
     aggregated_sentiment_df['final_count'] = aggregated_sentiment_df['weighted_sentiment']['count']
 
     stock_plot = stock_df.Close.hvplot.line(title=f"^{stock_ticker} on {analysis_date}")
     stock_change_plot = stock_df.Change.hvplot.line(title=f"^{stock_ticker} % change on {analysis_date}")
-    sentiment_plot = aggregated_sentiment_df.final_sentiment.hvplot.line(title=f"Aggregated sentiment for @{twitter_handle}")
+    sentiment_plot = aggregated_sentiment_df.final_sentiment.hvplot.line(title=f"Aggregated sentiment for @{twitter_handle} on {analysis_date}")
+    tweet_count_plot = aggregated_sentiment_df.final_count.hvplot.line(title=f"Tweet counts for @{twitter_handle} on {analysis_date}")
+
+    signal_corr = correlate(stock_df.Change, aggregated_sentiment_df.final_sentiment, method='direct')
+    correlation_plot = pd.DataFrame(signal_corr).hvplot.line(title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
+    correlation_smooth_plot = pd.DataFrame(signal_corr).rolling(10).mean().hvplot.line(title=f"Sliding correlation between @{twitter_handle} and ^{stock_ticker}")
+
+    plot = hv.Layout(stock_plot + stock_change_plot + sentiment_plot + tweet_count_plot + (correlation_plot * correlation_smooth_plot)).cols(1)
 
     stock_plot_png = f"@{twitter_handle}-^{stock_ticker}-{analysis_date}.html"
-
-    plot = hv.Layout(stock_plot + stock_change_plot + sentiment_plot).cols(1)
-
     hvplot.save(plot, stock_plot_png)
+
 
 if __name__ == "__main__":
     perform_analysis("elonmusk", "TSLA", "2022-10-05")

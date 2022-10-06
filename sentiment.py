@@ -28,9 +28,6 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
     tweet_df = pd.read_csv(tweets_file_csv, infer_datetime_format=True, parse_dates=True)
     tweet_df.dropna(inplace=True)
 
-    # Temporary bandaid for followers count
-    tweet_df["followers"] = np.random.randint(1, high=1_000_000, size=tweet_df.shape[0])
-
     # Adding spacy model and the sentencizer and asent pipelines
 
     nlp = spacy.load('en_core_web_lg')
@@ -38,8 +35,9 @@ def get_tweet_sentiment(twitter_user, analysis_date, custom_tweets_file=None):
     nlp.add_pipe('asent_en_v1')
     nlp.add_pipe('spacytextblob')
 
-    tweet_df["sentiment_asent"] = tweet_df["text"].apply(lambda tweet: nlp(tweet)._.polarity.compound)
-    tweet_df['sentiment_textblob'] = tweet_df["text"].apply(lambda tweet: nlp(tweet)._.blob.polarity)
+    tweet_sentiments = tweet_df["text"].apply(lambda tweet: nlp(tweet))
+    tweet_df["sentiment_asent"] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.polarity.compound)
+    tweet_df['sentiment_textblob'] = tweet_sentiments.apply(lambda tweet_nlp: tweet_nlp._.blob.polarity)
     tweet_df['average_sentiment'] = tweet_df[["sentiment_asent", "sentiment_textblob"]].mean(axis=1)
 
     # tweet_weighted_sentiment = followers * average_sentiment

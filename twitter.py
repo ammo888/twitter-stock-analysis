@@ -47,7 +47,7 @@ def mentions(user_id, start_date, end_date, num_tweets=5, num_pages=1):
     print(f"Retreiving mentions for {user_id} from {start_date} to {end_date}")
     resp = t.mentions(user_id, tweet_fields=['created_at'], max_results=num_tweets, start_time=start_date, end_time=end_date)
 
-    df = pd.DataFrame(columns=['id', 'author_id', 'author', 'timestamp', 'text'])
+    df = pd.DataFrame(columns=['id', 'author_id', 'author', 'timestamp', 'text', 'followers'])
 
     for _ in range(num_pages):
         try:
@@ -61,7 +61,8 @@ def mentions(user_id, start_date, end_date, num_tweets=5, num_pages=1):
                 'author_id': tweet['author_id'],
                 'author': tweet['author']['username'],
                 'timestamp': tweet['created_at'],
-                'text': tweet['text']
+                'text': tweet['text'],
+                'followers': tweet['public_metrics']['followers_count'] if 'public_metrics' in tweet else 1
             }, ignore_index=True)
 
     return df
@@ -92,6 +93,18 @@ def get_tweets(twitter_handle, analysis_date, num_tweets=100, num_pages=8, appen
         twitter_df = twitter_df.append(existing_tweets_df, ignore_index=True)
         print(f"Total data contains {twitter_df.shape[0]} tweets")
     twitter_df.to_csv(tweets_file_csv, index=False)
+
+
+def get_followers(user_ids):
+    resp = t.user_lookup(user_ids)
+
+    user_followers = dict()
+    for page in resp:
+        for user in ensure_flattened(page):
+            user_followers[int(user['id'])] = user['public_metrics']['followers_count']
+
+    return user_followers
+
 
 if __name__ == "__main__":
     get_tweets("elonmusk", "2022-10-05")
